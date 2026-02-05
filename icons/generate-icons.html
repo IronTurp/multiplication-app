@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin: 10px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .preview {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>PWA Icon Generator</h1>
+    <p>This tool will generate the required icons for your PWA.</p>
+
+    <div class="preview">
+        <h3>Preview:</h3>
+        <canvas id="preview" width="192" height="192"></canvas>
+    </div>
+
+    <button onclick="generateIcon(192, 'icon-192.png')">Download 192x192</button>
+    <button onclick="generateIcon(512, 'icon-512.png')">Download 512x512</button>
+    <button onclick="generateFavicon()">Download favicon.ico</button>
+
+    <h3>Instructions:</h3>
+    <ol>
+        <li>Click each button to download the icons</li>
+        <li>Save them in the 'icons' folder</li>
+        <li>Replace these files with your custom designs if desired</li>
+    </ol>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#4CAF50');
+            gradient.addColorStop(1, '#45a049');
+            ctx.fillStyle = gradient;
+
+            // Rounded rectangle
+            const radius = size * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw multiplication symbol (×)
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = size * 0.08;
+            ctx.lineCap = 'round';
+
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const symbolSize = size * 0.35;
+
+            // First line of ×
+            ctx.beginPath();
+            ctx.moveTo(centerX - symbolSize, centerY - symbolSize);
+            ctx.lineTo(centerX + symbolSize, centerY + symbolSize);
+            ctx.stroke();
+
+            // Second line of ×
+            ctx.beginPath();
+            ctx.moveTo(centerX + symbolSize, centerY - symbolSize);
+            ctx.lineTo(centerX - symbolSize, centerY + symbolSize);
+            ctx.stroke();
+
+            // Draw numbers
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.font = `bold ${size * 0.12}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('7', size * 0.3, size * 0.25);
+            ctx.fillText('8', size * 0.7, size * 0.25);
+            ctx.fillText('=', size * 0.5, size * 0.85);
+        }
+
+        function generateIcon(size, filename) {
+            const canvas = document.createElement('canvas');
+            drawIcon(canvas, size);
+
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        function generateFavicon() {
+            generateIcon(32, 'favicon.ico');
+        }
+
+        // Draw preview
+        window.onload = () => {
+            const preview = document.getElementById('preview');
+            drawIcon(preview, 192);
+        };
+    </script>
+</body>
+</html>

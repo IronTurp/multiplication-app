@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#4CAF50" rx="80"/>
+
+  <!-- Multiplication symbol (×) -->
+  <g transform="translate(256, 256)">
+    <!-- Large × symbol in white -->
+    <path d="M -80 -100 L -60 -100 L 0 -30 L 60 -100 L 80 -100 L 10 -10 L 80 80 L 60 80 L 0 10 L -60 80 L -80 80 L -10 -10 Z"
+          fill="white"
+          stroke="white"
+          stroke-width="4"/>
+  </g>
+
+  <!-- Numbers decoration -->
+  <text x="140" y="150" font-size="60" font-weight="bold" fill="rgba(255,255,255,0.6)" font-family="Arial">7</text>
+  <text x="340" y="150" font-size="60" font-weight="bold" fill="rgba(255,255,255,0.6)" font-family="Arial">8</text>
+  <text x="240" y="430" font-size="60" font-weight="bold" fill="rgba(255,255,255,0.6)" font-family="Arial">=</text>
+</svg>
