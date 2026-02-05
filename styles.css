@@ -103,7 +103,7 @@ body {
     padding: 1.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-align: left;
+    text-align: center;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
