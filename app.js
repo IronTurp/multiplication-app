@@ -185,6 +185,7 @@ const app = {
         practiceTable: null,
         practiceProgress: 0,
         practiceQuestions: [],
+        quizProgress: 0,
         timerInterval: null,
         timeLeft: 60
     },
@@ -583,6 +584,7 @@ const app = {
         this.state.score = { correct: 0, total: 0 };
 
         if (mode === 'quiz') {
+            this.state.quizProgress = 0;
             this.showScreen('quiz-screen');
             this.nextQuestion('quiz');
         } else if (mode === 'timed') {
@@ -625,8 +627,11 @@ const app = {
 
         // Update score display
         if (mode === 'quiz') {
+            this.state.quizProgress++;
+            document.getElementById('quiz-progress').textContent =
+                `${this.state.quizProgress}/${this.settings.quizQuestionsLimit}`;
             document.getElementById('quiz-score').textContent =
-                `${this.state.score.correct}/${this.state.score.total}`;
+                this.state.score.correct;
         } else if (mode === 'timed') {
             document.getElementById('timed-score').textContent = this.state.score.correct;
         } else if (mode === 'practice') {
@@ -711,8 +716,7 @@ const app = {
 
         // Update score
         if (mode === 'quiz') {
-            document.getElementById('quiz-score').textContent =
-                `${this.state.score.correct}/${this.state.score.total}`;
+            document.getElementById('quiz-score').textContent = this.state.score.correct;
         } else if (mode === 'timed') {
             document.getElementById('timed-score').textContent = this.state.score.correct;
         }
