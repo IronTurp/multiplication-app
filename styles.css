@@ -705,3 +705,179 @@ body {
 .mt-1 {
     margin-top: 1rem;
 }
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    min-width: 300px;
+    max-width: 400px;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-content h3 {
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.profile-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    transition: border-color 0.3s ease;
+}
+
+.profile-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.modal-buttons button {
+    flex: 1;
+}
+
+/* Profile Styles */
+.profile-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-indicator:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a4291 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.profile-indicator .icon {
+    font-size: 1.5rem;
+}
+
+.profiles-content {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.profiles-content .primary-btn {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.profile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.profile-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--bg);
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.profile-item.active {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%);
+    border-color: var(--primary);
+}
+
+.profile-item.clickable {
+    cursor: pointer;
+}
+
+.profile-item.clickable:hover {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(156, 39, 176, 0.05) 100%);
+    border-color: var(--secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.profile-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}

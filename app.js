@@ -85,7 +85,28 @@ J'ai créé cette application afin de permettre à mon enfant de pratiquer ses t
 Bref, celle-ci est disponible en mode hors-ligne, 100% open-source, mais comme nous disons en bon québécois: elle fait la job !
 
 Bonne étude
-Jean-François`
+Jean-François`,
+
+        // Profiles
+        profiles: "Profils",
+        currentProfile: "Profil actuel",
+        manageProfiles: "Gérer les Profils",
+        profilesTitle: "👤 Gestion des Profils",
+        profilesSubtitle: "Créer et gérer les profils d'utilisateurs",
+        createNewProfile: "Créer un Nouveau Profil",
+        profileName: "Nom du profil",
+        create: "Créer",
+        cancel: "Annuler",
+        switchProfile: "Changer",
+        deleteProfile: "Supprimer",
+        confirmDeleteProfile: "Es-tu sûr de vouloir supprimer ce profil ? Toutes les statistiques seront perdues.",
+        profileDeleted: "Profil supprimé !",
+        enterProfileName: "Veuillez entrer un nom de profil !",
+        profileCreated: "Profil créé !",
+        defaultProfile: "Anonyme",
+        cannotDeleteDefault: "Impossible de supprimer le profil par défaut !",
+        helloAnonymous: "Bonjour utilisateur Anonyme !",
+        helloUser: "Bonjour"
     },
     en: {
         // Menu
@@ -170,7 +191,28 @@ I created this application to allow my child to practice their multiplication ta
 In short, this one is available offline, 100% open-source, and as we say in good Quebec French: it does the job!
 
 Happy studying
-Jean-François`
+Jean-François`,
+
+        // Profiles
+        profiles: "Profiles",
+        currentProfile: "Current Profile",
+        manageProfiles: "Manage Profiles",
+        profilesTitle: "👤 Profile Management",
+        profilesSubtitle: "Create and manage user profiles",
+        createNewProfile: "Create New Profile",
+        profileName: "Profile name",
+        create: "Create",
+        cancel: "Cancel",
+        switchProfile: "Switch",
+        deleteProfile: "Delete",
+        confirmDeleteProfile: "Are you sure you want to delete this profile? All stats will be lost.",
+        profileDeleted: "Profile deleted!",
+        enterProfileName: "Please enter a profile name!",
+        profileCreated: "Profile created!",
+        defaultProfile: "Anonymous",
+        cannotDeleteDefault: "Cannot delete the default profile!",
+        helloAnonymous: "Hello Anonymous User!",
+        helloUser: "Hello"
     }
 };
 
@@ -214,14 +256,23 @@ const app = {
         timeLeft: 60
     },
 
+    // Profiles
+    profiles: {
+        currentProfile: 'default',
+        list: {}
+    },
+
     // Initialize app
     init() {
         this.loadLanguage();
+        this.migrateOldStatsToProfiles(); // Migrate old stats before loading profiles
+        this.loadProfiles();
         this.loadSettings();
         this.loadStats();
         this.renderTableCheckboxes();
         this.renderPracticeTableButtons();
         this.updateAllText();
+        this.updateProfileDisplay();
         this.showMenu();
     },
 
@@ -347,6 +398,16 @@ const app = {
         safeUpdate('#stats-screen .danger-btn', t('resetStats'));
         safeUpdate('#stats-screen .back-btn', t('backToMenu'));
 
+        // Update profiles screen
+        safeUpdate('#profiles-screen h2', t('profilesTitle'));
+        safeUpdate('#profiles-screen .subtitle', t('profilesSubtitle'));
+        safeUpdate('#profiles-screen .back-btn', t('backToMenu'));
+        const createProfileBtn = document.querySelector('#profiles-screen .primary-btn');
+        if (createProfileBtn) createProfileBtn.textContent = t('createNewProfile');
+
+        // Update profile display on menu
+        this.updateProfileDisplay();
+
         // Update table checkboxes labels
         this.updateTableCheckboxes();
     },
@@ -366,10 +427,221 @@ const app = {
         }));
     },
 
-    loadStats() {
-        const saved = localStorage.getItem('multiplyStats');
+    // Profile Management
+    migrateOldStatsToProfiles() {
+        // Check if we need to migrate old stats to profile system
+        const oldStats = localStorage.getItem('multiplyStats');
+        const profiles = localStorage.getItem('multiplyProfiles');
+
+        if (oldStats && !profiles) {
+            // Migrate old stats to default profile
+            const stats = JSON.parse(oldStats);
+            const defaultProfileName = currentLang === 'fr' ? 'Anonyme' : 'Anonymous';
+
+            this.profiles = {
+                currentProfile: 'default',
+                list: {
+                    'default': {
+                        id: 'default',
+                        name: defaultProfileName,
+                        stats: stats
+                    }
+                }
+            };
+
+            this.saveProfiles();
+            // Remove old stats key
+            localStorage.removeItem('multiplyStats');
+            console.log('Migrated old stats to profile system');
+        }
+    },
+
+    loadProfiles() {
+        const saved = localStorage.getItem('multiplyProfiles');
         if (saved) {
-            this.stats = JSON.parse(saved);
+            this.profiles = JSON.parse(saved);
+        } else {
+            // Create default profile
+            const defaultProfileName = currentLang === 'fr' ? 'Anonyme' : 'Anonymous';
+            this.profiles = {
+                currentProfile: 'default',
+                list: {
+                    'default': {
+                        id: 'default',
+                        name: defaultProfileName,
+                        stats: {
+                            totalQuestions: 0,
+                            correctAnswers: 0,
+                            byTable: {},
+                            highScores: { timed: 0 }
+                        }
+                    }
+                }
+            };
+            this.saveProfiles();
+        }
+    },
+
+    saveProfiles() {
+        localStorage.setItem('multiplyProfiles', JSON.stringify(this.profiles));
+    },
+
+    getCurrentProfile() {
+        return this.profiles.list[this.profiles.currentProfile];
+    },
+
+    createProfile(name) {
+        if (!name || name.trim() === '') {
+            alert(t('enterProfileName'));
+            return;
+        }
+
+        const id = 'profile_' + Date.now();
+        this.profiles.list[id] = {
+            id: id,
+            name: name.trim(),
+            stats: {
+                totalQuestions: 0,
+                correctAnswers: 0,
+                byTable: {},
+                highScores: { timed: 0 }
+            }
+        };
+
+        this.saveProfiles();
+        alert(t('profileCreated'));
+        this.renderProfileList();
+    },
+
+    switchProfile(profileId) {
+        if (this.profiles.list[profileId]) {
+            this.profiles.currentProfile = profileId;
+            this.saveProfiles();
+            this.loadStats(); // Reload stats for new profile
+            this.updateProfileDisplay();
+            this.showMenu();
+        }
+    },
+
+    deleteProfile(profileId) {
+        if (profileId === 'default') {
+            alert(t('cannotDeleteDefault'));
+            return;
+        }
+
+        if (confirm(t('confirmDeleteProfile'))) {
+            delete this.profiles.list[profileId];
+
+            // If we deleted the current profile, switch to default
+            if (this.profiles.currentProfile === profileId) {
+                this.profiles.currentProfile = 'default';
+                this.loadStats();
+            }
+
+            this.saveProfiles();
+            alert(t('profileDeleted'));
+            this.updateProfileDisplay();
+            this.renderProfileList();
+        }
+    },
+
+    updateProfileDisplay() {
+        const profile = this.getCurrentProfile();
+        const displayEl = document.getElementById('current-profile-name');
+        if (displayEl && profile) {
+            // Check if it's the default anonymous profile
+            if (profile.id === 'default') {
+                displayEl.textContent = t('helloAnonymous');
+            } else {
+                displayEl.textContent = `${t('helloUser')} ${profile.name}`;
+            }
+        }
+    },
+
+    showProfileManager() {
+        this.showScreen('profiles-screen');
+        this.renderProfileList();
+    },
+
+    renderProfileList() {
+        const container = document.getElementById('profile-list');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        Object.values(this.profiles.list).forEach(profile => {
+            const isActive = profile.id === this.profiles.currentProfile;
+
+            const div = document.createElement('div');
+            div.className = 'profile-item' + (isActive ? ' active' : ' clickable');
+
+            // Make the entire div clickable for inactive profiles
+            if (!isActive) {
+                div.onclick = () => this.switchProfile(profile.id);
+            }
+
+            div.innerHTML = `
+                <div class="profile-info">
+                    <span class="profile-name">${profile.name}</span>
+                    ${isActive ? '<span class="profile-badge">✓</span>' : ''}
+                </div>
+                <div class="profile-actions">
+                    ${profile.id !== 'default' ? `<button class="danger-btn small" onclick="event.stopPropagation(); app.deleteProfile('${profile.id}')">${t('deleteProfile')}</button>` : ''}
+                </div>
+            `;
+
+            container.appendChild(div);
+        });
+    },
+
+    showCreateProfileDialog() {
+        const modal = document.getElementById('create-profile-modal');
+        const input = document.getElementById('profile-name-input');
+
+        // Update modal text based on current language
+        document.getElementById('modal-title').textContent = t('createNewProfile');
+        input.placeholder = t('profileName');
+
+        // Clear previous input and show modal
+        input.value = '';
+        modal.classList.remove('hidden');
+
+        // Focus on input
+        setTimeout(() => input.focus(), 100);
+
+        // Allow Enter key to submit
+        input.onkeypress = (e) => {
+            if (e.key === 'Enter') {
+                this.confirmCreateProfile();
+            }
+        };
+    },
+
+    confirmCreateProfile() {
+        const input = document.getElementById('profile-name-input');
+        const name = input.value.trim();
+
+        if (name) {
+            this.createProfile(name);
+            this.hideCreateProfileModal();
+        } else {
+            alert(t('enterProfileName'));
+        }
+    },
+
+    cancelCreateProfile() {
+        this.hideCreateProfileModal();
+    },
+
+    hideCreateProfileModal() {
+        const modal = document.getElementById('create-profile-modal');
+        modal.classList.add('hidden');
+    },
+
+    loadStats() {
+        const profile = this.getCurrentProfile();
+        if (profile && profile.stats) {
+            this.stats = profile.stats;
         } else {
             this.stats = {
                 totalQuestions: 0,
@@ -381,7 +653,11 @@ const app = {
     },
 
     saveStats() {
-        localStorage.setItem('multiplyStats', JSON.stringify(this.stats));
+        const profile = this.getCurrentProfile();
+        if (profile) {
+            profile.stats = this.stats;
+            this.saveProfiles();
+        }
     },
 
     updateStats(table, correct) {
