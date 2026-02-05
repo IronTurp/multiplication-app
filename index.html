@@ -51,6 +51,11 @@
                     <span class="icon">⚙️</span> Settings
                 </button>
             </div>
+
+            <div class="language-selector">
+                <button type="button" class="lang-btn active" id="lang-fr" onclick="app.setLanguage('fr')">🇫🇷 Français</button>
+                <button type="button" class="lang-btn" id="lang-en" onclick="app.setLanguage('en')">🇬🇧 English</button>
+            </div>
         </div>
 
         <!-- Settings Screen -->
@@ -97,7 +102,7 @@
             </div>
 
             <div class="question-container">
-                <div class="question" id="quiz-question">7 × 8 = ?</div>
+                <div class="question" id="quiz-question"></div>
                 <input type="number" id="quiz-answer" class="answer-input" placeholder="?" autocomplete="off">
                 <div class="feedback" id="quiz-feedback"></div>
             </div>
@@ -118,7 +123,7 @@
             </div>
 
             <div class="question-container">
-                <div class="question" id="timed-question">7 × 8 = ?</div>
+                <div class="question" id="timed-question"></div>
                 <input type="number" id="timed-answer" class="answer-input" placeholder="?" autocomplete="off">
                 <div class="feedback" id="timed-feedback"></div>
             </div>
@@ -149,18 +154,37 @@
             </div>
         </div>
 
+        <!-- Quiz Results Screen -->
+        <div id="quiz-results-screen" class="screen">
+            <div class="header">
+                <h2>🎯 Quiz Complete!</h2>
+            </div>
+
+            <div class="results-content">
+                <div class="big-score" id="quiz-final-score">0/20</div>
+                <p class="results-label">Correct Answers</p>
+
+                <div class="encouragement" id="quiz-encouragement">Great job!</div>
+            </div>
+
+            <div class="bottom-buttons">
+                <button class="primary-btn" onclick="app.startMode('quiz')">Play Again</button>
+                <button class="secondary-btn" onclick="app.showMenu()">← Back to Menu</button>
+            </div>
+        </div>
+
         <!-- Practice by Table Screen -->
         <div id="practice-screen" class="screen game-screen">
             <div class="game-header">
                 <button class="icon-btn" onclick="app.exitGame()">✕</button>
                 <div class="progress-display">
-                    <span id="practice-progress">1 / 12</span>
+                    <span id="practice-progress"></span>
                 </div>
-                <div class="table-label">Table: <span id="practice-table">7</span></div>
+                <div class="table-label">Table: <span id="practice-table"></span></div>
             </div>
 
             <div class="question-container">
-                <div class="question" id="practice-question">7 × 8 = ?</div>
+                <div class="question" id="practice-question"></div>
                 <input type="number" id="practice-answer" class="answer-input" placeholder="?" autocomplete="off">
                 <div class="feedback" id="practice-feedback"></div>
             </div>

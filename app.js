@@ -1,5 +1,180 @@
 // Multiplication Practice App
+
+// Translations / Traductions
+const translations = {
+    fr: {
+        // Menu
+        title: "🎯 Pratique des Multiplications",
+        subtitle: "Choisis un mode de pratique !",
+        quizMode: "Mode Quiz",
+        quizDesc: "Questions aléatoires",
+        timedMode: "Défi Chronométré",
+        timedDesc: "Course contre la montre !",
+        practiceMode: "Pratique par Table",
+        practiceDesc: "Concentre-toi sur une table",
+        viewStats: "Voir les Statistiques",
+        settings: "Paramètres",
+
+        // Settings
+        settingsTitle: "⚙️ Paramètres",
+        settingsSubtitle: "Choisis les tables à pratiquer",
+        selectAll: "Tout Sélectionner",
+        deselectAll: "Tout Désélectionner",
+        table: "Table",
+        backToMenu: "← Retour au Menu",
+        language: "Langue",
+
+        // Practice by Table
+        practiceTableTitle: "🎓 Pratique par Table",
+        practiceTableSubtitle: "Choisis une table à pratiquer",
+
+        // Game
+        score: "Score",
+        checkAnswer: "Vérifier la Réponse",
+        nextQuestion: "Question Suivante →",
+        correctFeedback: "✓ Correct ! Bien joué !",
+        incorrectFeedback: "✗ Incorrect. La réponse est",
+
+        // Timed Challenge
+        timeUp: "⏱️ Temps Écoulé !",
+        questionsAnswered: "Questions Répondues",
+        highScore: "Meilleur Score",
+        playAgain: "Rejouer",
+
+        // Results
+        quizComplete: "🎯 Quiz Terminé !",
+        practiceComplete: "🎓 Pratique Terminée !",
+        correctAnswers: "Bonnes Réponses",
+
+        // Encouragement messages
+        amazing: "Incroyable ! Tu es un maître de la multiplication ! 🌟",
+        excellent: "Excellent travail ! Continue comme ça ! 🎉",
+        goodJob: "Bon travail ! La pratique rend parfait ! 👍",
+        greatEffort: "Bel effort !",
+        outstanding: "Remarquable ! Tu as maîtrisé cette table ! 🌟",
+        greatWork: "Super travail ! Tu te débrouilles très bien ! 🎉",
+        niceJob: "Bien joué ! Continue à pratiquer ! 👍",
+        goodEffort: "Bon effort !",
+
+        // Stats
+        statsTitle: "📊 Ta Progression",
+        totalQuestions: "Total de Questions",
+        correctAnswersCount: "Bonnes Réponses",
+        accuracy: "Précision",
+        timedHighScore: "Meilleur Score Chronométré",
+        statsByTable: "Statistiques par Table",
+        resetStats: "Réinitialiser les Statistiques",
+        noStatsYet: "Pas encore de statistiques. Commence à pratiquer !",
+
+        // Alerts
+        enterNumber: "Veuillez entrer un nombre !",
+        selectOneTable: "Veuillez sélectionner au moins une table dans les paramètres !",
+        confirmReset: "Es-tu sûr de vouloir réinitialiser toutes les statistiques ? Cette action est irréversible.",
+        statsReset: "Les statistiques ont été réinitialisées !",
+
+        // Progress
+        of: "de"
+    },
+    en: {
+        // Menu
+        title: "🎯 Multiplication Practice",
+        subtitle: "Choose a practice mode!",
+        quizMode: "Quiz Mode",
+        quizDesc: "Random questions",
+        timedMode: "Timed Challenge",
+        timedDesc: "Race the clock!",
+        practiceMode: "Practice by Table",
+        practiceDesc: "Focus on one table",
+        viewStats: "View Stats",
+        settings: "Settings",
+
+        // Settings
+        settingsTitle: "⚙️ Settings",
+        settingsSubtitle: "Choose which tables to practice",
+        selectAll: "Select All",
+        deselectAll: "Deselect All",
+        table: "Table",
+        backToMenu: "← Back to Menu",
+        language: "Language",
+
+        // Practice by Table
+        practiceTableTitle: "🎓 Practice by Table",
+        practiceTableSubtitle: "Choose a table to practice",
+
+        // Game
+        score: "Score",
+        checkAnswer: "Check Answer",
+        nextQuestion: "Next Question →",
+        correctFeedback: "✓ Correct! Well done!",
+        incorrectFeedback: "✗ Incorrect. The answer is",
+
+        // Timed Challenge
+        timeUp: "⏱️ Time's Up!",
+        questionsAnswered: "Questions Answered",
+        highScore: "High Score",
+        playAgain: "Play Again",
+
+        // Results
+        quizComplete: "🎯 Quiz Complete!",
+        practiceComplete: "🎓 Practice Complete!",
+        correctAnswers: "Correct Answers",
+
+        // Encouragement messages
+        amazing: "Amazing! You're a multiplication master! 🌟",
+        excellent: "Excellent work! Keep it up! 🎉",
+        goodJob: "Good job! Practice makes perfect! 👍",
+        greatEffort: "Great effort!",
+        outstanding: "Outstanding! You've mastered this table! 🌟",
+        greatWork: "Great work! You're doing really well! 🎉",
+        niceJob: "Nice job! Keep practicing! 👍",
+        goodEffort: "Good effort!",
+
+        // Stats
+        statsTitle: "📊 Your Progress",
+        totalQuestions: "Total Questions",
+        correctAnswersCount: "Correct Answers",
+        accuracy: "Accuracy",
+        timedHighScore: "Timed High Score",
+        statsByTable: "Stats by Table",
+        resetStats: "Reset All Stats",
+        noStatsYet: "No stats yet. Start practicing!",
+
+        // Alerts
+        enterNumber: "Please enter a number!",
+        selectOneTable: "Please select at least one table in settings!",
+        confirmReset: "Are you sure you want to reset all stats? This cannot be undone.",
+        statsReset: "Stats have been reset!",
+
+        // Progress
+        of: "of"
+    }
+};
+
+// Current language (default: French)
+let currentLang = 'fr';
+
+// Translation helper function
+function t(key) {
+    return translations[currentLang][key] || key;
+}
+
 const app = {
+    // ============================================
+    // ⚙️ SETTINGS - Adjust these values as needed
+    // ============================================
+    settings: {
+        // Delay before auto-advancing to next question after CORRECT answer (in milliseconds)
+        // 1000 = 1 second, 2000 = 2 seconds, etc.
+        correctAnswerDelay: 500,  // 0.5 seconds
+
+        // Delay before auto-advancing in timed mode (applies to both correct and incorrect)
+        timedModeDelay: 500,  // 0.5 seconds
+
+        // Number of questions in Quiz mode before showing results
+        // Change this to any number you want (10, 15, 20, 30, etc.)
+        quizQuestionsLimit: 20  // 20 questions per quiz
+    },
+
     // State
     state: {
         currentMode: null,
@@ -16,11 +191,131 @@ const app = {
 
     // Initialize app
     init() {
+        this.loadLanguage();
         this.loadSettings();
         this.loadStats();
         this.renderTableCheckboxes();
         this.renderPracticeTableButtons();
+        this.updateAllText();
         this.showMenu();
+    },
+
+    // Language Management
+    loadLanguage() {
+        const saved = localStorage.getItem('multiplyLanguage');
+        if (saved) {
+            currentLang = saved;
+        }
+
+        // Set initial active button state
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const activeBtn = document.getElementById(`lang-${currentLang}`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+    },
+
+    setLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('multiplyLanguage', lang);
+
+        // Update active button state
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(`lang-${lang}`).classList.add('active');
+
+        this.updateAllText();
+    },
+
+    updateAllText() {
+        // Helper function to safely update text content
+        const safeUpdate = (selector, textOrHtml, isHtml = false) => {
+            const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+            if (el) {
+                if (isHtml) {
+                    el.innerHTML = textOrHtml;
+                } else {
+                    el.textContent = textOrHtml;
+                }
+            }
+        };
+
+        // Update menu screen
+        safeUpdate('#menu-screen h1', t('title'));
+        safeUpdate('#menu-screen .subtitle', t('subtitle'));
+        safeUpdate('.quiz-btn .label', t('quizMode'));
+        safeUpdate('.quiz-btn .description', t('quizDesc'));
+        safeUpdate('.timed-btn .label', t('timedMode'));
+        safeUpdate('.timed-btn .description', t('timedDesc'));
+        safeUpdate('.practice-btn .label', t('practiceMode'));
+        safeUpdate('.practice-btn .description', t('practiceDesc'));
+
+        const statsBtn = document.querySelectorAll('.bottom-buttons .secondary-btn')[0];
+        const settingsBtn = document.querySelectorAll('.bottom-buttons .secondary-btn')[1];
+        if (statsBtn) statsBtn.innerHTML = `<span class="icon">📊</span> ${t('viewStats')}`;
+        if (settingsBtn) settingsBtn.innerHTML = `<span class="icon">⚙️</span> ${t('settings')}`;
+
+        // Update settings screen
+        safeUpdate('#settings-screen h2', t('settingsTitle'));
+        safeUpdate('#settings-screen .subtitle', t('settingsSubtitle'));
+        const selectAllBtn = document.querySelectorAll('#settings-screen .select-all-row button')[0];
+        const deselectAllBtn = document.querySelectorAll('#settings-screen .select-all-row button')[1];
+        if (selectAllBtn) selectAllBtn.textContent = t('selectAll');
+        if (deselectAllBtn) deselectAllBtn.textContent = t('deselectAll');
+        safeUpdate('#settings-screen .back-btn', t('backToMenu'));
+
+        // Update table selection screen
+        safeUpdate('#table-select-screen h2', t('practiceTableTitle'));
+        safeUpdate('#table-select-screen .subtitle', t('practiceTableSubtitle'));
+        safeUpdate('#table-select-screen .back-btn', t('backToMenu'));
+
+        // Update game screen buttons (but NOT questions or scores during gameplay)
+        safeUpdate('#quiz-submit', t('checkAnswer'));
+        safeUpdate('#quiz-next', t('nextQuestion'));
+        safeUpdate('#timed-submit', t('checkAnswer'));
+        safeUpdate('#practice-submit', t('checkAnswer'));
+        safeUpdate('#practice-next', t('nextQuestion'));
+
+        // Update results screens
+        safeUpdate('#timed-results-screen h2', t('timeUp'));
+        safeUpdate('#timed-results-screen .results-label', t('questionsAnswered'));
+        const timedPlayBtn = document.querySelectorAll('#timed-results-screen .bottom-buttons button')[0];
+        const timedMenuBtn = document.querySelectorAll('#timed-results-screen .bottom-buttons button')[1];
+        if (timedPlayBtn) timedPlayBtn.textContent = t('playAgain');
+        if (timedMenuBtn) timedMenuBtn.textContent = t('backToMenu');
+
+        safeUpdate('#quiz-results-screen h2', t('quizComplete'));
+        const quizResultLabel = document.querySelectorAll('#quiz-results-screen .results-label')[0];
+        if (quizResultLabel) quizResultLabel.textContent = t('correctAnswers');
+        const quizPlayBtn = document.querySelectorAll('#quiz-results-screen .bottom-buttons button')[0];
+        const quizMenuBtn = document.querySelectorAll('#quiz-results-screen .bottom-buttons button')[1];
+        if (quizPlayBtn) quizPlayBtn.textContent = t('playAgain');
+        if (quizMenuBtn) quizMenuBtn.textContent = t('backToMenu');
+
+        safeUpdate('#practice-results-screen h2', t('practiceComplete'));
+        const pracResultLabel = document.querySelectorAll('#practice-results-screen .results-label')[1];
+        if (pracResultLabel) pracResultLabel.textContent = t('correctAnswers');
+        const pracPlayBtn = document.querySelectorAll('#practice-results-screen .bottom-buttons button')[0];
+        const pracMenuBtn = document.querySelectorAll('#practice-results-screen .bottom-buttons button')[1];
+        if (pracPlayBtn) pracPlayBtn.textContent = t('practiceTableTitle').replace('🎓 ', '');
+        if (pracMenuBtn) pracMenuBtn.textContent = t('backToMenu');
+
+        // Update stats screen
+        safeUpdate('#stats-screen h2', t('statsTitle'));
+        const statLabels = document.querySelectorAll('#stats-screen .stat-label');
+        if (statLabels[0]) statLabels[0].textContent = t('totalQuestions');
+        if (statLabels[1]) statLabels[1].textContent = t('correctAnswersCount');
+        if (statLabels[2]) statLabels[2].textContent = t('accuracy');
+        if (statLabels[3]) statLabels[3].textContent = t('timedHighScore');
+        safeUpdate('#stats-screen h3', t('statsByTable'));
+        safeUpdate('#stats-screen .danger-btn', t('resetStats'));
+        safeUpdate('#stats-screen .back-btn', t('backToMenu'));
+
+        // Update table checkboxes labels
+        this.updateTableCheckboxes();
     },
 
     // LocalStorage Management
@@ -74,7 +369,7 @@ const app = {
     },
 
     resetStats() {
-        if (confirm('Are you sure you want to reset all stats? This cannot be undone.')) {
+        if (confirm(t('confirmReset'))) {
             this.stats = {
                 totalQuestions: 0,
                 correctAnswers: 0,
@@ -83,16 +378,28 @@ const app = {
             };
             this.saveStats();
             this.displayStats();
-            alert('Stats have been reset!');
+            alert(t('statsReset'));
         }
     },
 
     // Screen Navigation
     showScreen(screenId) {
+        console.log('Showing screen:', screenId);
+
+        // Remove active from ALL screens
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
+            console.log('Hiding:', screen.id);
         });
-        document.getElementById(screenId).classList.add('active');
+
+        // Add active to target screen
+        const targetScreen = document.getElementById(screenId);
+        if (targetScreen) {
+            targetScreen.classList.add('active');
+            console.log('Activated:', screenId);
+        } else {
+            console.error('Screen not found:', screenId);
+        }
     },
 
     showMenu() {
@@ -168,6 +475,8 @@ const app = {
     },
 
     toggleTable(tableNum) {
+        // Ensure tableNum is a number
+        tableNum = Number(tableNum);
         const index = this.state.selectedTables.indexOf(tableNum);
         if (index > -1) {
             this.state.selectedTables.splice(index, 1);
@@ -228,8 +537,8 @@ const app = {
                 return null;
             }
 
-            const multiplier = this.state.practiceQuestions[this.state.practiceProgress];
-            const table = this.state.practiceTable;
+            const multiplier = Number(this.state.practiceQuestions[this.state.practiceProgress]);
+            const table = Number(this.state.practiceTable);
 
             return {
                 question: `${table} × ${multiplier}`,
@@ -239,19 +548,23 @@ const app = {
         } else {
             // Quiz or Timed mode
             if (this.state.selectedTables.length === 0) {
-                alert('Please select at least one table in settings!');
+                alert(t('selectOneTable'));
                 this.showMenu();
                 return null;
             }
 
-            const table = this.state.selectedTables[
+            const table = Number(this.state.selectedTables[
                 Math.floor(Math.random() * this.state.selectedTables.length)
-            ];
+            ]);
             const multiplier = Math.floor(Math.random() * 12) + 1;
+            const answer = table * multiplier;
+
+            // Debug logging
+            console.log(`Question: ${table} × ${multiplier} = ${answer}`);
 
             return {
                 question: `${table} × ${multiplier}`,
-                answer: table * multiplier,
+                answer: answer,
                 table: table
             };
         }
@@ -285,6 +598,12 @@ const app = {
     },
 
     nextQuestion(mode) {
+        // Check if quiz mode has reached the question limit
+        if (mode === 'quiz' && this.state.score.total >= this.settings.quizQuestionsLimit) {
+            this.showQuizResults();
+            return;
+        }
+
         const question = this.generateQuestion(mode);
         if (!question) return;
 
@@ -313,7 +632,7 @@ const app = {
         } else if (mode === 'practice') {
             this.state.practiceProgress++;
             document.getElementById('practice-progress').textContent =
-                `${this.state.practiceProgress} / ${this.state.practiceQuestions.length}`;
+                `${this.state.practiceProgress} ${t('of')} ${this.state.practiceQuestions.length}`;
         }
 
         // Focus on input
@@ -340,11 +659,12 @@ const app = {
         const userAnswer = parseInt(input.value);
 
         if (isNaN(userAnswer)) {
-            alert('Please enter a number!');
+            alert(t('enterNumber'));
             return;
         }
 
-        const correct = userAnswer === this.state.currentQuestion.answer;
+        // Ensure both values are numbers for comparison
+        const correct = userAnswer === Number(this.state.currentQuestion.answer);
         this.state.score.total++;
         if (correct) {
             this.state.score.correct++;
@@ -356,11 +676,11 @@ const app = {
         // Show feedback
         const feedback = document.getElementById(`${mode}-feedback`);
         if (correct) {
-            feedback.textContent = '✓ Correct! Well done!';
+            feedback.textContent = t('correctFeedback');
             feedback.className = 'feedback correct';
             this.createConfetti();
         } else {
-            feedback.textContent = `✗ Incorrect. The answer is ${this.state.currentQuestion.answer}`;
+            feedback.textContent = `${t('incorrectFeedback')} ${this.state.currentQuestion.answer}`;
             feedback.className = 'feedback incorrect';
         }
 
@@ -368,14 +688,24 @@ const app = {
         document.getElementById(`${mode}-submit`).classList.add('hidden');
 
         if (mode === 'timed') {
-            // Auto-advance in timed mode
+            // Auto-advance in timed mode (uses timedModeDelay setting)
             setTimeout(() => {
                 this.nextQuestion(mode);
-            }, 1000);
+            }, this.settings.timedModeDelay);
         } else {
+            // For quiz and practice modes
             const nextBtn = document.getElementById(`${mode}-next`);
-            if (nextBtn) {
-                nextBtn.classList.remove('hidden');
+
+            if (correct) {
+                // Auto-advance after correct answer (uses correctAnswerDelay setting)
+                setTimeout(() => {
+                    this.nextQuestion(mode);
+                }, this.settings.correctAnswerDelay);
+            } else {
+                // Show Next button for incorrect answers so user can review
+                if (nextBtn) {
+                    nextBtn.classList.remove('hidden');
+                }
             }
         }
 
@@ -390,11 +720,14 @@ const app = {
 
     // Timer Management (Timed Challenge)
     startTimer() {
-        document.getElementById('timer').textContent = this.state.timeLeft;
+        // Update display immediately
+        const timerEl = document.getElementById('timer');
+        timerEl.textContent = this.state.timeLeft;
 
+        // Start countdown - decrement after 1 second
         this.state.timerInterval = setInterval(() => {
             this.state.timeLeft--;
-            document.getElementById('timer').textContent = this.state.timeLeft;
+            timerEl.textContent = this.state.timeLeft;
 
             if (this.state.timeLeft <= 0) {
                 clearInterval(this.state.timerInterval);
@@ -418,12 +751,30 @@ const app = {
         document.getElementById('high-score').textContent = this.stats.highScores.timed;
 
         // Encouragement message
-        let message = 'Great effort!';
-        if (score >= 30) message = 'Amazing! You\'re a multiplication master! 🌟';
-        else if (score >= 20) message = 'Excellent work! Keep it up! 🎉';
-        else if (score >= 10) message = 'Good job! Practice makes perfect! 👍';
+        let message = t('greatEffort');
+        if (score >= 30) message = t('amazing');
+        else if (score >= 20) message = t('excellent');
+        else if (score >= 10) message = t('goodJob');
 
         document.getElementById('encouragement-message').textContent = message;
+    },
+
+    // Quiz Mode Results
+    showQuizResults() {
+        this.showScreen('quiz-results-screen');
+
+        const score = `${this.state.score.correct}/${this.state.score.total}`;
+        const percentage = Math.round((this.state.score.correct / this.state.score.total) * 100);
+
+        document.getElementById('quiz-final-score').textContent = score;
+
+        // Encouragement message
+        let message = t('goodEffort');
+        if (percentage >= 90) message = t('outstanding');
+        else if (percentage >= 75) message = t('greatWork');
+        else if (percentage >= 60) message = t('niceJob');
+
+        document.getElementById('quiz-encouragement').textContent = message;
     },
 
     // Practice Mode Results
@@ -437,10 +788,10 @@ const app = {
         document.getElementById('practice-final-score').textContent = score;
 
         // Encouragement
-        let message = 'Good effort!';
-        if (percentage >= 90) message = 'Outstanding! You\'ve mastered this table! 🌟';
-        else if (percentage >= 75) message = 'Great work! You\'re doing really well! 🎉';
-        else if (percentage >= 60) message = 'Nice job! Keep practicing! 👍';
+        let message = t('goodEffort');
+        if (percentage >= 90) message = t('outstanding');
+        else if (percentage >= 75) message = t('greatWork');
+        else if (percentage >= 60) message = t('niceJob');
 
         document.getElementById('practice-encouragement').textContent = message;
     },
@@ -468,7 +819,7 @@ const app = {
                 const row = document.createElement('div');
                 row.className = 'table-stat-row';
                 row.innerHTML = `
-                    <span class="table-stat-label">Table ${i}</span>
+                    <span class="table-stat-label">${t('table')} ${i}</span>
                     <span class="table-stat-value">${tableStats.correct}/${tableStats.total} (${accuracy}%)</span>
                 `;
                 container.appendChild(row);
@@ -476,7 +827,7 @@ const app = {
         }
 
         if (container.children.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: #999;">No stats yet. Start practicing!</p>';
+            container.innerHTML = `<p style="text-align: center; color: #999;">${t('noStatsYet')}</p>`;
         }
     },
 
