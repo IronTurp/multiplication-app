@@ -14,6 +14,7 @@ const translations = {
         practiceDesc: "Concentre-toi sur une table",
         viewStats: "Voir les Statistiques",
         settings: "Paramètres",
+        about: "À propos",
 
         // Settings
         settingsTitle: "⚙️ Paramètres",
@@ -73,7 +74,17 @@ const translations = {
         statsReset: "Les statistiques ont été réinitialisées !",
 
         // Progress
-        of: "de"
+        of: "de",
+
+        // About
+        aboutTitle: "À propos",
+        aboutText: `Bonjour à vous cher parents et/ou élève,
+
+J'ai créé cette application afin de permettre à mon enfant de pratiquer ses tables de multiplication de façon simple avec un petit côté ludique. L'offre d'application sur les App Stores est considérable, mais je n'y trouvais pas mon compte, certaines applications étant devenues payantes, ou nécessitant une inscription.
+
+Bref, celle-ci est disponible en mode hors-ligne, 100% open-source, mais comme nous disons en bon québécois: elle fait la job !
+
+Bonne étude`
     },
     en: {
         // Menu
@@ -87,6 +98,7 @@ const translations = {
         practiceDesc: "Focus on one table",
         viewStats: "View Stats",
         settings: "Settings",
+        about: "About",
 
         // Settings
         settingsTitle: "⚙️ Settings",
@@ -146,7 +158,17 @@ const translations = {
         statsReset: "Stats have been reset!",
 
         // Progress
-        of: "of"
+        of: "of",
+
+        // About
+        aboutTitle: "About",
+        aboutText: `Hello dear parents and/or students,
+
+I created this application to allow my child to practice their multiplication tables in a simple way with a fun touch. The selection of applications on App Stores is considerable, but I couldn't find what I was looking for - some applications have become paid, or require registration.
+
+In short, this one is available offline, 100% open-source, and as we say in good Quebec French: it does the job!
+
+Happy studying`
     }
 };
 
@@ -256,8 +278,10 @@ const app = {
 
         const statsBtn = document.querySelectorAll('.bottom-buttons .secondary-btn')[0];
         const settingsBtn = document.querySelectorAll('.bottom-buttons .secondary-btn')[1];
+        const aboutBtn = document.querySelectorAll('.bottom-buttons .secondary-btn')[2];
         if (statsBtn) statsBtn.innerHTML = `<span class="icon">📊</span> ${t('viewStats')}`;
         if (settingsBtn) settingsBtn.innerHTML = `<span class="icon">⚙️</span> ${t('settings')}`;
+        if (aboutBtn) aboutBtn.innerHTML = `<span class="icon">ℹ️</span> ${t('about')}`;
 
         // Update settings screen
         safeUpdate('#settings-screen h2', t('settingsTitle'));
@@ -303,6 +327,12 @@ const app = {
         const pracMenuBtn = document.querySelectorAll('#practice-results-screen .bottom-buttons button')[1];
         if (pracPlayBtn) pracPlayBtn.textContent = t('practiceTableTitle').replace('🎓 ', '');
         if (pracMenuBtn) pracMenuBtn.textContent = t('backToMenu');
+
+        // Update about screen
+        safeUpdate('#about-screen h2', `ℹ️ ${t('aboutTitle')}`);
+        safeUpdate('#about-text', t('aboutText'));
+        const aboutBackBtn = document.querySelector('#about-screen .back-btn');
+        if (aboutBackBtn) aboutBackBtn.textContent = t('backToMenu');
 
         // Update stats screen
         safeUpdate('#stats-screen h2', t('statsTitle'));
@@ -416,6 +446,11 @@ const app = {
     showStats() {
         this.showScreen('stats-screen');
         this.displayStats();
+    },
+
+    showAbout() {
+        this.showScreen('about-screen');
+        document.getElementById('about-text').textContent = t('aboutText');
     },
 
     showTableSelection() {
