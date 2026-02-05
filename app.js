@@ -84,7 +84,8 @@ J'ai créé cette application afin de permettre à mon enfant de pratiquer ses t
 
 Bref, celle-ci est disponible en mode hors-ligne, 100% open-source, mais comme nous disons en bon québécois: elle fait la job !
 
-Bonne étude`
+Bonne étude
+Jean-François`
     },
     en: {
         // Menu
@@ -168,7 +169,8 @@ I created this application to allow my child to practice their multiplication ta
 
 In short, this one is available offline, 100% open-source, and as we say in good Quebec French: it does the job!
 
-Happy studying`
+Happy studying
+Jean-François`
     }
 };
 
