@@ -1,4 +1,4 @@
-const CACHE_NAME = 'multiply-fun-v1';
+const CACHE_NAME = 'multiply-fun-v2';
 const urlsToCache = [
   '/multiplication-app/',
   '/multiplication-app/index.html',
