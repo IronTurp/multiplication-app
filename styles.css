@@ -711,9 +711,48 @@ body {
     border-radius: 16px;
 }
 
-.table-stats-container h3 {
-    margin-bottom: 1rem;
+/* Collapsible Sections */
+.collapsible-header {
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.collapsible-header h3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
     color: var(--text);
+}
+
+.collapsible:not(.collapsed) .collapsible-header h3 {
+    margin-bottom: 1rem;
+}
+
+.collapsible-arrow {
+    transition: transform 0.3s;
+    font-size: 0.8em;
+}
+
+.collapsible:not(.collapsed) .collapsible-arrow {
+    transform: rotate(90deg);
+}
+
+.collapsible-body {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.collapsible.collapsed .collapsible-body {
+    max-height: 0;
+}
+
+.problem-ops-container {
+    background: var(--bg);
+    padding: 1.5rem;
+    border-radius: 16px;
 }
 
 .table-stats {
@@ -739,6 +778,10 @@ body {
 .table-stat-value {
     color: var(--primary);
     font-weight: bold;
+}
+
+.table-stat-value.problem-accuracy {
+    color: #e53935;
 }
 
 /* About Screen */
@@ -874,7 +917,6 @@ body {
 }
 
 .progress-section h3 {
-    margin-bottom: 1rem;
     color: var(--text);
 }
 

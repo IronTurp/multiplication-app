@@ -153,7 +153,12 @@ Jean-François`,
         // Install Banner
         installBannerText: "Installez l'application pour ne pas perdre vos données !",
         installBannerIOS: "Ajoutez cette app à l'écran d'accueil : appuyez sur Partager puis \"Sur l'écran d'accueil\"",
-        install: "Installer"
+        install: "Installer",
+
+        // Problem Operations & Smart Questions
+        problemOperations: "Opérations Problématiques",
+        noProblemOps: "Aucune opération problématique. Continue comme ça !",
+        problemQuestionsInfo: "Questions de révision incluses"
     },
     en: {
         // Menu
@@ -306,7 +311,12 @@ Jean-François`,
         // Install Banner
         installBannerText: "Install the app to keep your data safe!",
         installBannerIOS: "Add to Home Screen: tap Share then \"Add to Home Screen\"",
-        install: "Install"
+        install: "Install",
+
+        // Problem Operations & Smart Questions
+        problemOperations: "Problem Operations",
+        noProblemOps: "No problem operations. Keep it up!",
+        problemQuestionsInfo: "Review questions included"
     }
 };
 
@@ -389,7 +399,10 @@ const app = {
         timerInterval: null,
         timeLeft: 60,
         statsActivePeriod: 'all',
-        selectedOperations: ['multiplication']
+        selectedOperations: ['multiplication'],
+        currentSessionId: null,
+        problemQuestionsPool: [],
+        problemQuestionCounter: 0
     },
 
     // Profiles
@@ -572,8 +585,9 @@ const app = {
         if (statLabels[2]) statLabels[2].textContent = t('accuracy');
         if (statLabels[3]) statLabels[3].textContent = t('timedHighScore');
         if (statLabels[4]) statLabels[4].textContent = t('tipsUsed');
-        safeUpdate('#stats-screen .table-stats-container h3', t('statsByTable'));
-        safeUpdate('#stats-screen .progress-section h3', t('progressTitle'));
+        safeUpdate('#stats-screen .table-stats-container .collapsible-title', t('statsByTable'));
+        safeUpdate('#stats-screen .problem-ops-container .collapsible-title', t('problemOperations'));
+        safeUpdate('#stats-screen .progress-section .collapsible-title', t('progressTitle'));
         safeUpdate('#stats-screen .danger-btn', t('resetStats'));
         safeUpdate('#stats-screen .back-btn', t('backToMenu'));
 
@@ -993,7 +1007,8 @@ const app = {
             multiplier: this.state.currentQuestion ? this.state.currentQuestion.multiplier : null,
             correct: correct,
             mode: this.state.currentMode,
-            operation: this.state.currentQuestion ? this.state.currentQuestion.operation : 'multiplication'
+            operation: this.state.currentQuestion ? this.state.currentQuestion.operation : 'multiplication',
+            sessionId: this.state.currentSessionId
         });
         this.saveStats();
     },
@@ -1060,6 +1075,14 @@ const app = {
         this.updateOperationToggles();
     },
 
+    // Collapsible Sections
+    toggleCollapsible(headerEl) {
+        const collapsible = headerEl.closest('.collapsible');
+        if (collapsible) {
+            collapsible.classList.toggle('collapsed');
+        }
+    },
+
     // Operation Toggle (Multiplication / Division)
     toggleOperation(op) {
         const idx = this.state.selectedOperations.indexOf(op);
@@ -1083,6 +1106,112 @@ const app = {
     pickOperation() {
         const ops = this.state.selectedOperations;
         return ops[Math.floor(Math.random() * ops.length)];
+    },
+
+    // Session Tracking & Problem Question Pool
+    generateSessionId() {
+        return Date.now().toString(36);
+    },
+
+    buildProblemQuestionsPool(mode) {
+        const records = this.stats.answerRecords.filter(r => r.sessionId);
+        if (records.length === 0) {
+            this.state.problemQuestionsPool = [];
+            this.state.problemQuestionCounter = 0;
+            return;
+        }
+
+        // Group by sessionId, get unique sessions sorted by most recent
+        const sessionDates = {};
+        records.forEach(r => {
+            if (!sessionDates[r.sessionId] || r.date > sessionDates[r.sessionId]) {
+                sessionDates[r.sessionId] = r.date;
+            }
+        });
+        const sortedSessions = Object.keys(sessionDates).sort((a, b) => sessionDates[b].localeCompare(sessionDates[a]));
+
+        // Find problem operations: try last 1 session, then last 5
+        let problemOps = this.findProblemOpsInSessions(records, sortedSessions, 1);
+        if (problemOps.length === 0) {
+            problemOps = this.findProblemOpsInSessions(records, sortedSessions, 5);
+        }
+
+        // Filter by selectedOperations
+        const allowedOps = this.state.selectedOperations;
+        problemOps = problemOps.filter(op => allowedOps.includes(op.operation));
+
+        // Filter by selectedTables (for quiz/timed) or practiceTable (for practice)
+        if (mode === 'practice') {
+            problemOps = problemOps.filter(op => op.table === this.state.practiceTable);
+        } else {
+            const allowedTables = this.state.selectedTables;
+            problemOps = problemOps.filter(op => allowedTables.includes(op.table));
+        }
+
+        this.state.problemQuestionsPool = problemOps;
+        this.state.problemQuestionCounter = 0;
+    },
+
+    findProblemOpsInSessions(records, sortedSessions, limit) {
+        const sessionIds = new Set(sortedSessions.slice(0, limit));
+        const wrongRecords = records.filter(r => sessionIds.has(r.sessionId) && !r.correct);
+
+        // Collect unique {table, multiplier, operation} tuples
+        const seen = new Set();
+        const result = [];
+        wrongRecords.forEach(r => {
+            if (r.multiplier == null) return;
+            const op = r.operation || 'multiplication';
+            const key = `${r.table}-${r.multiplier}-${op}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                result.push({ table: r.table, multiplier: r.multiplier, operation: op });
+            }
+        });
+        return result;
+    },
+
+    shouldUseProblemQuestion() {
+        return this.state.problemQuestionCounter % 10 === 0 && this.state.problemQuestionsPool.length > 0;
+    },
+
+    drawFromProblemPool(mode) {
+        let pool = this.state.problemQuestionsPool;
+
+        if (mode === 'practice') {
+            pool = pool.filter(op => op.table === this.state.practiceTable);
+        }
+
+        if (pool.length === 0) return null;
+
+        const entry = pool[Math.floor(Math.random() * pool.length)];
+        return this.buildQuestionFromPool(entry);
+    },
+
+    buildQuestionFromPool(entry) {
+        const { table, multiplier, operation } = entry;
+        const product = table * multiplier;
+
+        if (operation === 'division') {
+            const divideByTable = Math.random() < 0.5;
+            const divisor = divideByTable ? table : multiplier;
+            const answer = divideByTable ? multiplier : table;
+            return {
+                question: `${product} ÷ ${divisor}`,
+                answer: answer,
+                table: table,
+                multiplier: multiplier,
+                operation: 'division'
+            };
+        }
+
+        return {
+            question: `${table} × ${multiplier}`,
+            answer: product,
+            table: table,
+            multiplier: multiplier,
+            operation: 'multiplication'
+        };
     },
 
     exitGame() {
@@ -1182,12 +1311,27 @@ const app = {
         this.state.practiceTable = tableNum;
         this.state.practiceProgress = 0;
         this.state.score = { correct: 0, total: 0 };
+        this.state.currentSessionId = this.generateSessionId();
 
         // Generate all questions for this table (1-12, shuffled)
         this.state.practiceQuestions = [];
         for (let i = 1; i <= 12; i++) {
             this.state.practiceQuestions.push(i);
         }
+
+        // Build problem pool and inject extra review questions (duplicates for review)
+        this.buildProblemQuestionsPool('practice');
+        const poolForTable = this.state.problemQuestionsPool.filter(op => op.table === tableNum);
+        const seen = new Set();
+        const extraMultipliers = [];
+        for (const op of poolForTable) {
+            if (!seen.has(op.multiplier) && extraMultipliers.length < 2) {
+                seen.add(op.multiplier);
+                extraMultipliers.push(op.multiplier);
+            }
+        }
+        extraMultipliers.forEach(m => this.state.practiceQuestions.push(m));
+
         this.shuffleArray(this.state.practiceQuestions);
 
         this.startMode('practice');
@@ -1195,6 +1339,13 @@ const app = {
 
     // Question Generation
     generateQuestion(mode) {
+        // Smart question injection: every 10th question from problem pool
+        this.state.problemQuestionCounter++;
+        if (this.shouldUseProblemQuestion()) {
+            const poolQuestion = this.drawFromProblemPool(mode);
+            if (poolQuestion) return poolQuestion;
+        }
+
         let table, multiplier;
 
         if (mode === 'practice') {
@@ -1279,6 +1430,8 @@ const app = {
         this.state.quizProgress = 0;
         this.state.score = { correct: 0, total: 0 };
         this.state.quizStartTime = Date.now();
+        this.state.currentSessionId = this.generateSessionId();
+        this.buildProblemQuestionsPool('quiz');
         this.showScreen('quiz-screen');
         this.nextQuestion('quiz');
     },
@@ -1286,6 +1439,8 @@ const app = {
     startTimedFromConfig() {
         this.state.currentMode = 'timed';
         this.state.score = { correct: 0, total: 0 };
+        this.state.currentSessionId = this.generateSessionId();
+        this.buildProblemQuestionsPool('timed');
         this.showScreen('timed-screen');
         this.state.timeLeft = 60;
         this.startTimer();
@@ -1542,13 +1697,29 @@ const app = {
         const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
         const byTable = {};
+        const byOperation = {};
         records.forEach(r => {
             if (!byTable[r.table]) byTable[r.table] = { correct: 0, total: 0 };
             byTable[r.table].total++;
             if (r.correct) byTable[r.table].correct++;
+
+            if (r.multiplier != null) {
+                const op = r.operation || 'multiplication';
+                const key = `${r.table}-${r.multiplier}-${op}`;
+                if (!byOperation[key]) byOperation[key] = { table: r.table, multiplier: r.multiplier, operation: op, correct: 0, total: 0 };
+                byOperation[key].total++;
+                if (r.correct) byOperation[key].correct++;
+            }
         });
 
-        return { totalQuestions, correctAnswers, accuracy, byTable };
+        return { totalQuestions, correctAnswers, accuracy, byTable, byOperation };
+    },
+
+    getProblemOperations(byOperation) {
+        return Object.values(byOperation)
+            .filter(op => op.total >= 3 && (op.correct / op.total) < 0.75)
+            .sort((a, b) => (a.correct / a.total) - (b.correct / b.total))
+            .slice(0, 10);
     },
 
     // Filter stats by period (tab click handler)
@@ -1592,6 +1763,31 @@ const app = {
 
         if (container.children.length === 0) {
             container.innerHTML = `<p style="text-align: center; color: #999;">${t('noStatsYet')}</p>`;
+        }
+
+        // Problem operations
+        const problemOpsContainer = document.getElementById('problem-ops');
+        if (problemOpsContainer) {
+            problemOpsContainer.innerHTML = '';
+            const problems = this.getProblemOperations(computed.byOperation);
+
+            if (problems.length > 0) {
+                problems.forEach(op => {
+                    const accuracy = Math.round((op.correct / op.total) * 100);
+                    const display = op.operation === 'division'
+                        ? `${op.table * op.multiplier} ÷ ${op.table}`
+                        : `${op.table} × ${op.multiplier}`;
+                    const row = document.createElement('div');
+                    row.className = 'table-stat-row';
+                    row.innerHTML = `
+                        <span class="table-stat-label">${display}</span>
+                        <span class="table-stat-value problem-accuracy">${op.correct}/${op.total} (${accuracy}%)</span>
+                    `;
+                    problemOpsContainer.appendChild(row);
+                });
+            } else {
+                problemOpsContainer.innerHTML = `<p style="text-align: center; color: #999;">${t('noProblemOps')}</p>`;
+            }
         }
 
         // Render progress section
