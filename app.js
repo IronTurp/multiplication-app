@@ -132,7 +132,28 @@ Jean-François`,
         defaultProfile: "Anonyme",
         cannotDeleteDefault: "Impossible de supprimer le profil par défaut !",
         helloAnonymous: "Bonjour utilisateur Anonyme !",
-        helloUser: "Bonjour"
+        helloUser: "Bonjour",
+
+        // Operations
+        multiplication: "Multiplication",
+        division: "Division",
+        timedConfigTitle: "⏱️ Défi Chronométré",
+        timedConfigSubtitle: "60 secondes - réponds au maximum de questions !",
+        start: "Commencer !",
+
+        // Export/Import
+        exportData: "Exporter les données",
+        importData: "Importer les données",
+        dataManagement: "Gestion des données",
+        importInvalidFile: "Fichier invalide. Veuillez sélectionner un fichier d'exportation valide.",
+        importMergeOrReplace: "Voulez-vous fusionner les données importées avec vos données actuelles ?\n\nOK = Fusionner\nAnnuler = Tout remplacer",
+        importSuccess: "Données importées avec succès !",
+        importError: "Erreur lors de l'importation. Vérifiez que le fichier est valide.",
+
+        // Install Banner
+        installBannerText: "Installez l'application pour ne pas perdre vos données !",
+        installBannerIOS: "Ajoutez cette app à l'écran d'accueil : appuyez sur Partager puis \"Sur l'écran d'accueil\"",
+        install: "Installer"
     },
     en: {
         // Menu
@@ -264,7 +285,28 @@ Jean-François`,
         defaultProfile: "Anonymous",
         cannotDeleteDefault: "Cannot delete the default profile!",
         helloAnonymous: "Hello Anonymous User!",
-        helloUser: "Hello"
+        helloUser: "Hello",
+
+        // Operations
+        multiplication: "Multiplication",
+        division: "Division",
+        timedConfigTitle: "⏱️ Timed Challenge",
+        timedConfigSubtitle: "60 seconds - answer as many as you can!",
+        start: "Start!",
+
+        // Export/Import
+        exportData: "Export Data",
+        importData: "Import Data",
+        dataManagement: "Data Management",
+        importInvalidFile: "Invalid file. Please select a valid export file.",
+        importMergeOrReplace: "Do you want to merge imported data with your current data?\n\nOK = Merge\nCancel = Replace all",
+        importSuccess: "Data imported successfully!",
+        importError: "Import failed. Please check that the file is valid.",
+
+        // Install Banner
+        installBannerText: "Install the app to keep your data safe!",
+        installBannerIOS: "Add to Home Screen: tap Share then \"Add to Home Screen\"",
+        install: "Install"
     }
 };
 
@@ -346,7 +388,8 @@ const app = {
         quizStartTime: null,
         timerInterval: null,
         timeLeft: 60,
-        statsActivePeriod: 'all'
+        statsActivePeriod: 'all',
+        selectedOperations: ['multiplication']
     },
 
     // Profiles
@@ -368,6 +411,7 @@ const app = {
         this.updateAllText();
         this.updateProfileDisplay();
         this.setupMobileKeyboardFix();
+        this.setupInstallPrompt();
         this.showMenu();
     },
 
@@ -491,6 +535,20 @@ const app = {
         });
         safeUpdate('#quiz-count-screen .back-btn', t('backToMenu'));
 
+        // Update timed config screen
+        safeUpdate('#timed-config-screen h2', t('timedConfigTitle'));
+        safeUpdate('#timed-config-screen .subtitle', t('timedConfigSubtitle'));
+        safeUpdate('#timed-config-screen .primary-btn', t('start'));
+        safeUpdate('#timed-config-screen .back-btn', t('backToMenu'));
+
+        // Update operation toggle labels
+        document.querySelectorAll('.operation-btn[data-op="multiplication"] .op-label').forEach(el => {
+            el.textContent = t('multiplication');
+        });
+        document.querySelectorAll('.operation-btn[data-op="division"] .op-label').forEach(el => {
+            el.textContent = t('division');
+        });
+
         // Update quiz results time labels
         const timeLabels = document.querySelectorAll('#quiz-results-screen .time-stat-label');
         if (timeLabels[0]) timeLabels[0].textContent = t('totalTime');
@@ -526,6 +584,18 @@ const app = {
         const createProfileBtn = document.querySelector('#profiles-screen .primary-btn');
         if (createProfileBtn) createProfileBtn.textContent = t('createNewProfile');
 
+        // Update data management section
+        safeUpdate('.data-management-section h3', t('dataManagement'));
+        safeUpdate('.export-label', t('exportData'));
+        safeUpdate('.import-label', t('importData'));
+
+        // Update install banner
+        const installBanner = document.getElementById('install-banner');
+        if (installBanner && !installBanner.classList.contains('hidden')) {
+            safeUpdate('.install-banner-text', t('installBannerText'));
+            safeUpdate('.install-banner-btn', t('install'));
+        }
+
         // Update profile display on menu
         this.updateProfileDisplay();
 
@@ -540,13 +610,15 @@ const app = {
             const settings = JSON.parse(saved);
             this.state.selectedTables = settings.selectedTables || [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
             this.settings.showTipsInQuiz = settings.showTipsInQuiz !== undefined ? settings.showTipsInQuiz : true;
+            this.state.selectedOperations = settings.selectedOperations || ['multiplication'];
         }
     },
 
     saveSettings() {
         localStorage.setItem('multiplySettings', JSON.stringify({
             selectedTables: this.state.selectedTables,
-            showTipsInQuiz: this.settings.showTipsInQuiz
+            showTipsInQuiz: this.settings.showTipsInQuiz,
+            selectedOperations: this.state.selectedOperations
         }));
     },
 
@@ -737,6 +809,112 @@ const app = {
         });
     },
 
+    // Export / Import
+    exportProfiles() {
+        const data = {
+            version: 1,
+            exportDate: new Date().toISOString(),
+            profiles: this.profiles,
+            settings: {
+                selectedTables: this.state.selectedTables,
+                showTipsInQuiz: this.settings.showTipsInQuiz,
+                selectedOperations: this.state.selectedOperations
+            },
+            language: currentLang
+        };
+
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `multiplication-data-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    triggerImport() {
+        document.getElementById('import-file-input').click();
+    },
+
+    importProfiles(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+
+                if (!data.profiles || !data.profiles.list) {
+                    alert(t('importInvalidFile'));
+                    return;
+                }
+
+                const merge = confirm(t('importMergeOrReplace'));
+
+                if (merge) {
+                    const existingNames = new Set(
+                        Object.values(this.profiles.list).map(p => p.name.toLowerCase())
+                    );
+
+                    Object.entries(data.profiles.list).forEach(([id, profile]) => {
+                        if (id === 'default') {
+                            const existing = this.profiles.list['default'];
+                            if (existing && profile.stats) {
+                                existing.stats.answerRecords = [
+                                    ...existing.stats.answerRecords,
+                                    ...profile.stats.answerRecords
+                                ];
+                                existing.stats.quizHistory = [
+                                    ...existing.stats.quizHistory,
+                                    ...profile.stats.quizHistory
+                                ];
+                                if (profile.stats.highScores && profile.stats.highScores.timed > (existing.stats.highScores.timed || 0)) {
+                                    existing.stats.highScores.timed = profile.stats.highScores.timed;
+                                }
+                            }
+                        } else if (!existingNames.has(profile.name.toLowerCase())) {
+                            const newId = 'profile_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+                            this.profiles.list[newId] = { ...profile, id: newId };
+                        }
+                    });
+                } else {
+                    this.profiles = data.profiles;
+                }
+
+                if (data.settings) {
+                    this.state.selectedTables = data.settings.selectedTables || this.state.selectedTables;
+                    this.settings.showTipsInQuiz = data.settings.showTipsInQuiz !== undefined
+                        ? data.settings.showTipsInQuiz : this.settings.showTipsInQuiz;
+                    if (data.settings.selectedOperations) {
+                        this.state.selectedOperations = data.settings.selectedOperations;
+                    }
+                    this.saveSettings();
+                }
+
+                if (data.language) {
+                    this.setLanguage(data.language);
+                }
+
+                this.saveProfiles();
+                this.loadStats();
+                this.updateProfileDisplay();
+                this.renderProfileList();
+                alert(t('importSuccess'));
+            } catch (err) {
+                console.error('Import failed:', err);
+                alert(t('importError'));
+            }
+        };
+
+        reader.readAsText(file);
+        event.target.value = '';
+    },
+
     showCreateProfileDialog() {
         const modal = document.getElementById('create-profile-modal');
         const input = document.getElementById('profile-name-input');
@@ -814,7 +992,8 @@ const app = {
             table: table,
             multiplier: this.state.currentQuestion ? this.state.currentQuestion.multiplier : null,
             correct: correct,
-            mode: this.state.currentMode
+            mode: this.state.currentMode,
+            operation: this.state.currentQuestion ? this.state.currentQuestion.operation : 'multiplication'
         });
         this.saveStats();
     },
@@ -878,6 +1057,32 @@ const app = {
 
     showTableSelection() {
         this.showScreen('table-select-screen');
+        this.updateOperationToggles();
+    },
+
+    // Operation Toggle (Multiplication / Division)
+    toggleOperation(op) {
+        const idx = this.state.selectedOperations.indexOf(op);
+        if (idx > -1) {
+            if (this.state.selectedOperations.length <= 1) return;
+            this.state.selectedOperations.splice(idx, 1);
+        } else {
+            this.state.selectedOperations.push(op);
+        }
+        this.updateOperationToggles();
+        this.saveSettings();
+    },
+
+    updateOperationToggles() {
+        document.querySelectorAll('.operation-btn').forEach(btn => {
+            const op = btn.dataset.op;
+            btn.classList.toggle('active', this.state.selectedOperations.includes(op));
+        });
+    },
+
+    pickOperation() {
+        const ops = this.state.selectedOperations;
+        return ops[Math.floor(Math.random() * ops.length)];
     },
 
     exitGame() {
@@ -990,21 +1195,15 @@ const app = {
 
     // Question Generation
     generateQuestion(mode) {
+        let table, multiplier;
+
         if (mode === 'practice') {
             if (this.state.practiceProgress >= this.state.practiceQuestions.length) {
                 this.showPracticeResults();
                 return null;
             }
-
-            const multiplier = Number(this.state.practiceQuestions[this.state.practiceProgress]);
-            const table = Number(this.state.practiceTable);
-
-            return {
-                question: `${table} × ${multiplier}`,
-                answer: table * multiplier,
-                table: table,
-                multiplier: multiplier
-            };
+            multiplier = Number(this.state.practiceQuestions[this.state.practiceProgress]);
+            table = Number(this.state.practiceTable);
         } else {
             // Quiz or Timed mode
             if (this.state.selectedTables.length === 0) {
@@ -1012,23 +1211,35 @@ const app = {
                 this.showMenu();
                 return null;
             }
-
-            const table = Number(this.state.selectedTables[
+            table = Number(this.state.selectedTables[
                 Math.floor(Math.random() * this.state.selectedTables.length)
             ]);
-            const multiplier = Math.floor(Math.random() * 12) + 1;
-            const answer = table * multiplier;
+            multiplier = Math.floor(Math.random() * 12) + 1;
+        }
 
-            // Debug logging
-            console.log(`Question: ${table} × ${multiplier} = ${answer}`);
+        const product = table * multiplier;
+        const operation = this.pickOperation();
 
+        if (operation === 'division') {
+            const divideByTable = Math.random() < 0.5;
+            const divisor = divideByTable ? table : multiplier;
+            const answer = divideByTable ? multiplier : table;
             return {
-                question: `${table} × ${multiplier}`,
+                question: `${product} ÷ ${divisor}`,
                 answer: answer,
                 table: table,
-                multiplier: multiplier
+                multiplier: multiplier,
+                operation: 'division'
             };
         }
+
+        return {
+            question: `${table} × ${multiplier}`,
+            answer: product,
+            table: table,
+            multiplier: multiplier,
+            operation: 'multiplication'
+        };
     },
 
     shuffleArray(array) {
@@ -1042,18 +1253,20 @@ const app = {
     startMode(mode) {
         if (mode === 'quiz') {
             this.showScreen('quiz-count-screen');
+            this.updateOperationToggles();
+            return;
+        }
+
+        if (mode === 'timed') {
+            this.showScreen('timed-config-screen');
+            this.updateOperationToggles();
             return;
         }
 
         this.state.currentMode = mode;
         this.state.score = { correct: 0, total: 0 };
 
-        if (mode === 'timed') {
-            this.showScreen('timed-screen');
-            this.state.timeLeft = 60;
-            this.startTimer();
-            this.nextQuestion('timed');
-        } else if (mode === 'practice') {
+        if (mode === 'practice') {
             this.showScreen('practice-screen');
             document.getElementById('practice-table').textContent = this.state.practiceTable;
             this.nextQuestion('practice');
@@ -1068,6 +1281,15 @@ const app = {
         this.state.quizStartTime = Date.now();
         this.showScreen('quiz-screen');
         this.nextQuestion('quiz');
+    },
+
+    startTimedFromConfig() {
+        this.state.currentMode = 'timed';
+        this.state.score = { correct: 0, total: 0 };
+        this.showScreen('timed-screen');
+        this.state.timeLeft = 60;
+        this.startTimer();
+        this.nextQuestion('timed');
     },
 
     nextQuestion(mode) {
@@ -1535,6 +1757,65 @@ const app = {
                 setTimeout(() => confetti.remove(), 3000);
             }, i * 30);
         }
+    },
+
+    // PWA Install Prompt
+    setupInstallPrompt() {
+        this.deferredInstallPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.deferredInstallPrompt = e;
+            this.showInstallBanner();
+        });
+
+        if (window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true) {
+            return;
+        }
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+            const dismissed = localStorage.getItem('installBannerDismissed');
+            if (!dismissed) {
+                this.showInstallBanner(true);
+            }
+        }
+    },
+
+    showInstallBanner(isIOS = false) {
+        const dismissed = localStorage.getItem('installBannerDismissed');
+        if (dismissed) return;
+
+        const banner = document.getElementById('install-banner');
+        if (!banner) return;
+        const textEl = banner.querySelector('.install-banner-text');
+        const installBtn = banner.querySelector('.install-banner-btn');
+
+        if (isIOS) {
+            textEl.textContent = t('installBannerIOS');
+            installBtn.classList.add('hidden');
+        } else {
+            textEl.textContent = t('installBannerText');
+            installBtn.classList.remove('hidden');
+        }
+
+        banner.classList.remove('hidden');
+    },
+
+    installPWA() {
+        if (this.deferredInstallPrompt) {
+            this.deferredInstallPrompt.prompt();
+            this.deferredInstallPrompt.userChoice.then(() => {
+                this.deferredInstallPrompt = null;
+                document.getElementById('install-banner').classList.add('hidden');
+            });
+        }
+    },
+
+    dismissInstallBanner() {
+        document.getElementById('install-banner').classList.add('hidden');
+        localStorage.setItem('installBannerDismissed', 'true');
     }
 };
 
